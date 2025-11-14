@@ -1,0 +1,2 @@
+# Minimal requirements for running FlowDelta examples and tests
+pytest>=7.0
