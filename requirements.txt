@@ -1,0 +1,8 @@
+# FlowDelta has no external dependencies.
+# The library only uses Python stdlib modules:
+# - json (built-in)
+# - os (built-in)
+# - time (built-in)
+
+# No packages needed for the library itself.
+# This file is included for completeness.
