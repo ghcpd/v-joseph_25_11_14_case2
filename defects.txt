@@ -1,0 +1,89 @@
+FlowDelta Documentation Audit - defects.txt
+
+Overview:
+- Repository provides simple incremental ETL helpers in `flowdelta/`
+- The README contains inaccurate API docs and examples that don't run as-is.
+
+Discovery Date: 2025-11-14
+
+1) Incorrect import paths (Incorrect Documentation)
+- Finding: README imports symbols from `flowdelta` top-level package, but the project exposes modules in `flowdelta.<submodule>` (no top-level re-exports).
+- Incorrect snippet:
+  from flowdelta import DeltaTracker
+- Error trace:
+  Traceback (most recent call last):
+    File "<string>", line 1, in <module>
+    from flowdelta import DeltaTracker
+  ImportError: cannot import name 'DeltaTracker' from 'flowdelta' (unknown location)
+- Corrected snippet:
+  from flowdelta.delta import DeltaTracker
+
+2) DeltaTracker API mismatch (Incorrect Documentation)
+- Finding: README uses keyword constructor args `source` and `checkpoint` and method `get_last_timestamp()`, neither matches the implementation.
+- Incorrect snippet:
+  tracker = DeltaTracker(source="orders", checkpoint="cp1")
+  last = tracker.get_last_timestamp()
+- Errors:
+  - Import fails (see 1) or AttributeError when using correct module import:
+    Traceback (most recent call last):
+      File "<string>", line 4, in <module>
+        last = tracker.get_last_timestamp()
+    AttributeError: 'DeltaTracker' object has no attribute 'get_last_timestamp'. Did you mean: 'last_timestamp'?
+- Corrected snippet:
+  tracker = DeltaTracker(source_name="orders", checkpoint_id="cp1")
+  last = tracker.last_timestamp()
+- Note: The constructor also supports `initial_timestamp` as a named kwarg.
+
+3) TaskScheduler parameters mismatch (Incorrect Documentation)
+- Finding: README uses `interval` and `on_tick` keyword arguments; actual signatures are `frequency`, `handler` and `max_runs`.
+- Incorrect snippet:
+  sched = TaskScheduler(interval=5, on_tick=job_run)
+- Error trace (import corrected, kw mismatch):
+  Traceback (most recent call last):
+    File "<string>", line 6, in <module>
+      sched = TaskScheduler(interval=5, on_tick=job_run)
+  TypeError: TaskScheduler.__init__() got an unexpected keyword argument 'interval'
+- Corrected snippet:
+  sched = TaskScheduler(frequency=5, handler=job_run)
+- Note: `TaskScheduler.start()` by default runs only once; use `max_runs` to loop.
+
+4) Storage method and path mismatch (Incorrect Documentation; OS compatibility warning)
+- Finding: README uses `save_json`/`load_json` function names while the API is `write_json`/`read_json`. Also the example uses `/tmp/flow` which is Unix-specific.
+- Incorrect snippet:
+  s = Storage("/tmp/flow")
+  s.save_json("users", {"a": 1})
+  print(s.load_json("users"))
+- Error trace:
+  Traceback (most recent call last):
+    File "<string>", line 1, in <module>
+    from flowdelta import Storage
+  ImportError: cannot import name 'Storage' from 'flowdelta' (unknown location)
+
+  And when using correct module import, method mismatch raises:
+  Traceback (most recent call last):
+    File "<string>", line 4, in <module>
+      s.save_json("users", {"a": 1})
+  AttributeError: 'Storage' object has no attribute 'save_json'
+- Corrected snippet:
+  from flowdelta.storage import Storage
+  s = Storage("tmp_flow", mkdir=True)
+  s.write_json("users", {"a": 1})
+  print(s.read_json("users"))
+
+5) run_delta keyword mismatch (Failing Tutorial example / Incorrect Documentation)
+- Finding: README uses `since` as a kwarg, implementation is `since_timestamp`.
+- Incorrect snippet:
+  run_delta("orders", since="2020-01-01")
+- Error trace:
+  Traceback (most recent call last):
+    File "<string>", line 3, in <module>
+      run_delta("orders", since="2020-01-01")
+  TypeError: run_delta() got an unexpected keyword argument 'since'
+- Corrected snippet:
+  from flowdelta.delta import run_delta
+  run_delta("orders", since_timestamp="2020-01-01")
+  # or use plain positional: run_delta("orders", "2020-01-01")
+
+Summary: The README examples are runnable with corrected imports, method/param names, and local path choices.
+
+End of defects.txt
