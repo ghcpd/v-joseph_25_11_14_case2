@@ -1,0 +1,61 @@
+DEFECTS REPORT — FlowDelta Documentation Analysis
+================================================
+
+[Incorrect Docs] DeltaTracker Method Name
+-----------------------------------------
+README.md:
+    tracker.get_last_timestamp()
+Actual:
+    DeltaTracker.last_timestamp()
+Error:
+    AttributeError: 'DeltaTracker' object has no attribute 'get_last_timestamp'
+
+[Incorrect Docs] run_delta Signature
+------------------------------------
+README.md:
+    run_delta("orders", since="2020-01-01")
+Actual signature:
+    run_delta(source_name, since_timestamp, verbose=False)
+Error:
+    TypeError: run_delta() got an unexpected keyword argument 'since'
+
+[Incorrect Docs] TaskScheduler API
+----------------------------------
+README.md:
+    TaskScheduler(interval=5, on_tick=fn)
+Actual:
+    TaskScheduler(frequency, handler, *, max_runs=1)
+Error:
+    TypeError: __init__() got an unexpected keyword argument 'interval'
+
+[Tutorial Failure] Scheduler Example
+------------------------------------
+The README example calls:
+    sched.start()
+But the handler returns a string, and the example does not print anything.
+
+Trace:
+    (No crash, but output mismatch)
+
+[Incorrect Docs] Storage API & Methods
+--------------------------------------
+README.md:
+    s = Storage("/tmp/flow")
+    s.save_json(...)
+    s.load_json(...)
+Actual:
+    Storage(path, mkdir=False)
+    write_json()
+    read_json()
+
+Error:
+    AttributeError: 'Storage' object has no attribute 'save_json'
+
+[Tutorial Failure] Storage Missing Directory
+--------------------------------------------
+README:
+    s = Storage("/tmp/flow")
+Actual:
+    Storage(path, mkdir=False)   # No auto-creation
+Error:
+    FileNotFoundError: [Errno 2] No such file or directory: '/tmp/flow/users.json'
