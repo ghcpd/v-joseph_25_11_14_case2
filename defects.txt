@@ -1,0 +1,159 @@
+FlowDelta Documentation Defects
+
+Summary:
+- The README contains multiple issues: missing package exports (import errors), mismatched argument names, method name differences, and wrong method names.
+
+Details:
+
+1) Failing tutorial example - imports from 'flowdelta' root (all snippets)
+Category: Failing tutorial examples
+Original README snippet:
+from flowdelta import DeltaTracker
+
+tracker = DeltaTracker(source="orders", checkpoint="cp1")
+last = tracker.get_last_timestamp()
+print("Last timestamp:", last)
+
+Observed error (import failure):
+Traceback (most recent call last):
+  File "<string>", line 2, in <module>
+    from flowdelta import DeltaTracker
+ImportError: cannot import name 'DeltaTracker' from 'flowdelta' (unknown location)
+
+Explanation: The package does not export module members at the package root; classes/functions live in submodules (delta, scheduler, storage).
+
+Corrected snippet (works):
+from flowdelta.delta import DeltaTracker
+
+tracker = DeltaTracker("orders", "cp1")
+last = tracker.last_timestamp()
+print("Last timestamp:", last)
+
+---
+
+2) Incorrect docs - DeltaTracker parameter names and method name
+Category: Incorrect documentation
+Original README snippet:
+DeltaTracker(source="orders", checkpoint="cp1")
+# uses get_last_timestamp()
+
+Observed errors when using correct import but wrong keywords and method:
+Traceback (most recent call last):
+  File "<string>", line 5, in <module>
+    tracker = DeltaTracker(source="orders", checkpoint="cp1")
+TypeError: DeltaTracker.__init__() got an unexpected keyword argument 'source'
+
+Traceback (most recent call last):
+  File "<string>", line 5, in <module>
+    last = tracker.get_last_timestamp()
+AttributeError: 'DeltaTracker' object has no attribute 'get_last_timestamp'. Did you mean: 'last_timestamp'?
+
+Explanation: Implementation uses constructor signature (source_name, checkpoint_id, *, initial_timestamp=None) and the method is `last_timestamp()`.
+
+Corrected snippet (works):
+from flowdelta.delta import DeltaTracker
+
+tracker = DeltaTracker("orders", "cp1")
+last = tracker.last_timestamp()
+print(last)
+
+---
+
+3) Incorrect docs - TaskScheduler parameter names
+Category: Incorrect documentation
+Original README snippet:
+from flowdelta import TaskScheduler
+
+def job_run():
+    return "job complete"
+
+sched = TaskScheduler(interval=5, on_tick=job_run)
+sched.start()
+
+Observed errors (import failure and parameter mismatch):
+ImportError: cannot import name 'TaskScheduler' from 'flowdelta' (unknown location)
+
+When imported from correct module, wrong keyword args produce:
+Traceback (most recent call last):
+  File "<string>", line 7, in <module>
+    sched = TaskScheduler(interval=5, on_tick=job_run)
+TypeError: TaskScheduler.__init__() got an unexpected keyword argument 'interval'
+
+Explanation: Implementation signature is TaskScheduler(frequency: int, handler, *, max_runs=1)
+
+Corrected snippet (works):
+from flowdelta.scheduler import TaskScheduler
+
+def job_run():
+    print("job complete")
+
+sched = TaskScheduler(frequency=0, handler=job_run, max_runs=1)
+sched.start()
+
+---
+
+4) Incorrect docs - Storage method names
+Category: Incorrect documentation
+Original README snippet:
+from flowdelta import Storage
+
+s = Storage("/tmp/flow")
+s.save_json("users", {"a": 1})
+print(s.load_json("users"))
+
+Observed error (import failure and attribute mismatch):
+ImportError: cannot import name 'Storage' from 'flowdelta' (unknown location)
+
+After importing from correct module, calling save_json produces:
+Traceback (most recent call last):
+  File "<string>", line 5, in <module>
+    s.save_json("users", {"a": 1})
+    ^^^^^^^^^^^
+AttributeError: 'Storage' object has no attribute 'save_json'
+
+Explanation: Implementation provides write_json/read_json; constructor has optional mkdir flag.
+
+Corrected snippet (works):
+from flowdelta.storage import Storage
+
+s = Storage("./flowtmp", mkdir=True)
+s.write_json("users", {"a": 1})
+print(s.read_json("users"))
+
+---
+
+5) Incorrect docs - run_delta keyword name
+Category: Incorrect documentation
+Original README snippet:
+from flowdelta import run_delta
+
+run_delta("orders", since="2020-01-01")
+
+Observed error (import failure and keyword mismatch):
+ImportError: cannot import name 'run_delta' from 'flowdelta' (unknown location)
+
+After correct import, calling with wrong keyword triggers:
+Traceback (most recent call last):
+  File "<string>", line 4, in <module>
+    run_delta("orders", since="2020-01-01")
+TypeError: run_delta() got an unexpected keyword argument 'since'
+
+Explanation: Implementation expects signature run_delta(source_name: str, since_timestamp: str, verbose: bool = False)
+
+Corrected snippet (works):
+from flowdelta.delta import run_delta
+
+run_delta("orders", "2020-01-01", verbose=True)
+
+---
+
+Notes & Recommendations:
+- Offer package-level exports through a `__init__.py` if you want the `from flowdelta import ...` style to work (or update README to import from submodules explicitly). Example exports in __init__.py:
+```python
+from .delta import DeltaTracker, run_delta
+from .scheduler import TaskScheduler
+from .storage import Storage
+```
+- Update parameter names and method names in README and docstrings.
+- Add an example showing `mkdir=True` when creating `Storage` to avoid file write errors.
+- Add tests verifying the correct import paths and function signatures.
