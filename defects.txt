@@ -1,0 +1,116 @@
+## Failing tutorial examples
+
+### Quick Start example import fails
+README snippet:
+```
+from flowdelta import DeltaTracker
+
+tracker = DeltaTracker(source="orders", checkpoint="cp1")
+last = tracker.get_last_timestamp()
+print("Last timestamp:", last)
+```
+Traceback:
+```
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+ImportError: cannot import name 'DeltaTracker' from 'flowdelta' (unknown location)
+```
+Correct usage:
+```
+from flowdelta.delta import DeltaTracker
+
+tracker = DeltaTracker("orders", "cp1")
+last = tracker.last_timestamp()
+print("Last timestamp:", last)
+```
+
+### Task scheduler example import fails
+README snippet:
+```
+from flowdelta import TaskScheduler
+
+def job_run():
+    return "job complete"
+
+sched = TaskScheduler(interval=5, on_tick=job_run)
+sched.start()
+```
+Traceback:
+```
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+ImportError: cannot import name 'TaskScheduler' from 'flowdelta' (unknown location)
+```
+Correct usage:
+```
+from flowdelta.scheduler import TaskScheduler
+
+def job_run():
+    print("tick")
+
+sched = TaskScheduler(frequency=1, handler=job_run, max_runs=1)
+sched.start()
+```
+
+### Storage example import fails
+README snippet:
+```
+from flowdelta import Storage
+
+s = Storage("/tmp/flow")
+s.save_json("users", {"a": 1})
+print(s.load_json("users"))
+```
+Traceback:
+```
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+ImportError: cannot import name 'Storage' from 'flowdelta' (unknown location)
+```
+Correct usage:
+```
+from flowdelta.storage import Storage
+
+store = Storage("/tmp/flow", mkdir=True)
+store.write_json("users", {"a": 1})
+print(store.read_json("users"))
+```
+
+### run_delta example import fails
+README snippet:
+```
+from flowdelta import run_delta
+
+run_delta("orders", since="2020-01-01")
+```
+Traceback:
+```
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+ImportError: cannot import name 'run_delta' from 'flowdelta' (unknown location)
+```
+Correct usage:
+```
+from flowdelta.delta import run_delta
+
+run_delta("orders", "2020-01-01", verbose=True)
+```
+
+## Incorrect documentation
+
+### DeltaTracker signature and method names do not match implementation
+* README uses keyword arguments `source` and `checkpoint`, but `flowdelta/delta.py:2` defines `DeltaTracker.__init__(source_name, checkpoint_id, *, initial_timestamp=None)`.
+* README calls `tracker.get_last_timestamp()`, but the class only exposes `last_timestamp()` (`flowdelta/delta.py:7`).
+Corrected version uses positional arguments `("orders", "cp1")` and calls `last_timestamp()`.
+
+### TaskScheduler argument names outdated
+* README constructs `TaskScheduler(interval=5, on_tick=job_run)`, but `flowdelta/scheduler.py:4-6` expects `TaskScheduler(frequency: int, handler, *, max_runs=1)`.
+* Without adjusting keywords, instantiation raises `TypeError`. The corrected example supplies `frequency`, `handler`, and optionally `max_runs` for predictable runs.
+
+### Storage method names differ from implementation
+* README invokes `save_json`/`load_json`, but `flowdelta/storage.py:7-15` defines `write_json` and `read_json`.
+* The documentation must be updated to use the implemented method names and to enable directory creation via `mkdir=True` when needed.
+
+### run_delta parameter names differ from implementation
+* README calls `run_delta("orders", since="2020-01-01")`, but `flowdelta/delta.py:10` declares `run_delta(source_name, since_timestamp, verbose: bool = False)`.
+* Passing `since` raises `TypeError`; the corrected example passes the `since_timestamp` positional argument and optionally toggles `verbose`.
