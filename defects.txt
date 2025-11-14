@@ -1,0 +1,132 @@
+DEFECTS REPORT — FlowDelta Documentation Analysis
+=================================================
+
+[Failing Tutorial Examples]
+
+1. Quick Start import path
+   README.md snippet:
+       from flowdelta import DeltaTracker
+
+   Actual error trace:
+       Traceback (most recent call last):
+         File "<stdin>", line 1, in <module>
+       ImportError: cannot import name 'DeltaTracker' from 'flowdelta' (unknown location)
+
+   Corrected version:
+       from flowdelta.delta import DeltaTracker
+
+2. Creating a Scheduler import path
+   README.md snippet:
+       from flowdelta import TaskScheduler
+
+   Actual error trace:
+       Traceback (most recent call last):
+         File "<stdin>", line 1, in <module>
+       ImportError: cannot import name 'TaskScheduler' from 'flowdelta' (unknown location)
+
+   Corrected version:
+       from flowdelta.scheduler import TaskScheduler
+
+3. Saving Data import path
+   README.md snippet:
+       from flowdelta import Storage
+
+   Actual error trace:
+       Traceback (most recent call last):
+         File "<stdin>", line 1, in <module>
+       ImportError: cannot import name 'Storage' from 'flowdelta' (unknown location)
+
+   Corrected version:
+       from flowdelta.storage import Storage
+
+4. Running a Delta import path
+   README.md snippet:
+       from flowdelta import run_delta
+
+   Actual error trace:
+       Traceback (most recent call last):
+         File "<stdin>", line 1, in <module>
+       ImportError: cannot import name 'run_delta' from 'flowdelta' (unknown location)
+
+   Corrected version:
+       from flowdelta.delta import run_delta
+
+[Incorrect Documentation]
+
+1. DeltaTracker initializer keyword arguments
+   README.md snippet:
+       tracker = DeltaTracker(source="orders", checkpoint="cp1")
+
+   Actual error trace:
+       Traceback (most recent call last):
+         File "<stdin>", line 2, in <module>
+       TypeError: DeltaTracker.__init__() got an unexpected keyword argument 'source'
+
+   Corrected version:
+       tracker = DeltaTracker("orders", "cp1")
+   (Or: DeltaTracker(source_name="orders", checkpoint_id="cp1"))
+
+2. DeltaTracker accessor name
+   README.md snippet:
+       last = tracker.get_last_timestamp()
+
+   Actual error trace:
+       Traceback (most recent call last):
+         File "<stdin>", line 3, in <module>
+       AttributeError: 'DeltaTracker' object has no attribute 'get_last_timestamp'. Did you mean: 'last_timestamp'?
+
+   Corrected version:
+       last = tracker.last_timestamp()
+
+3. TaskScheduler constructor keywords
+   README.md snippet:
+       sched = TaskScheduler(interval=5, on_tick=job_run)
+
+   Actual error trace:
+       Traceback (most recent call last):
+         File "<stdin>", line 6, in <module>
+       TypeError: TaskScheduler.__init__() got an unexpected keyword argument 'interval'
+
+   Corrected version:
+       sched = TaskScheduler(frequency=5, handler=job_run)
+
+4. Storage helper names
+   README.md snippet:
+       s = Storage("/tmp/flow")
+       s.save_json("users", {"a": 1})
+
+   Actual error trace:
+       Traceback (most recent call last):
+         File "<stdin>", line 4, in <module>
+       AttributeError: 'Storage' object has no attribute 'save_json'
+
+   Corrected version:
+       s = Storage("/tmp/flow", mkdir=True)
+       s.write_json("users", {"a": 1})
+
+5. Storage directory creation detail
+   README.md snippet:
+       s = Storage("/tmp/flow")
+
+   Actual error trace:
+       Traceback (most recent call last):
+         File "<stdin>", line 4, in <module>
+           with open(fp, "w") as f:
+         File "/mnt/d/mins_project/model_test/Documentation & knowledge/1114/Codex-mini/flowdelta/storage.py", line 11, in write_json
+           with open(fp, "w") as f:
+       FileNotFoundError: [Errno 2] No such file or directory: '/tmp/flow/users.json'
+
+   Corrected version:
+       s = Storage("/tmp/flow", mkdir=True)
+
+6. run_delta keyword argument
+   README.md snippet:
+       run_delta("orders", since="2020-01-01")
+
+   Actual error trace:
+       Traceback (most recent call last):
+         File "<stdin>", line 2, in <module>
+       TypeError: run_delta() got an unexpected keyword argument 'since'
+
+   Corrected version:
+       run_delta("orders", "2020-01-01", verbose=True)

@@ -1,0 +1,91 @@
+Task: Documentation Accuracy & Tutorial Verification
+You are provided with a Python mini-framework for incremental ETL tasks named FlowDelta.
+
+Your job is to evaluate documentation correctness for the following error sub-types:
+
+Sub-Types to Test
+Incorrect Documentation
+
+Wrong parameter names
+Wrong default values
+Wrong return type
+Wrong value ranges
+Outdated API description
+Tutorial Examples That Don’t Run
+
+Code fails due to missing imports
+Execution errors
+Incorrect arguments
+Wrong execution order
+Mismatched function signatures
+Your Tasks
+Use .venv as the virtual environment.
+Run every example under README.md.
+Compare the README examples against the actual implementation in flowdelta/.
+Identify every mismatch and show:
+Actual error traceback
+The incorrect documentation snippet
+The corrected version
+Expected Output
+You must generate all of the following:
+
+1. defects.txt
+Each discovered problem
+Categorized by subtype:
+Incorrect docs
+Failing tutorial examples
+Include actual Python error traces
+2. corrected_readme.md
+A fully corrected version of the README
+All examples must run successfully in a clean .venv
+3. requirements.txt
+All dependencies needed for the library to run and be tested
+4. setup.sh
+Bash script to bootstrap everything:
+Create .venv
+Install requirements
+Run examples
+5. test_files/
+Minimal test scripts to ensure the library works after corrections
+6. run_tests.sh
+One-button test runner
+If a README example does not run as written, you must:
+
+Document it in defects.txt
+Fix it in corrected_readme.md
+
+Documented every failing tutorial entry and API mismatch in defects.txt (line 6) so each README snippet now includes the trace plus an explicit correction.
+Built a corrected reference walkthrough in corrected_readme.md (line 1) with the real module imports, parameter names, mkdir flag, and verbose delta run so the examples execute end-to-end.
+Added setup.sh (line 1) to recreate .venv, install requirements.txt (line 1), and exercise those corrected snippets automatically for quick verification.
+Added test_files/test_flowdelta.py (line 1) plus run_tests.sh (line 1) to codify delta/scheduler/storage/run validations and make them runnable via ./run_tests.sh.
+Tests: ./setup.sh (passes while refreshing .venv and printing the corrected example outputs) and ./run_tests.sh (passes the scripted checks after exporting PYTHONPATH so the namespace package resolves).
+Next steps: 1) Replace README.md with the corrected sequences once approved so the published tutorial matches the code, 2) Hook ./run_tests.sh into CI/automation to guard against future doc/API drift.
+6 files changed
++281
+-0
+
+
+corrected_readme.md
++47
+-0
+
+defects.txt
++132
+-0
+
+requirements.txt
++1
+-0
+
+run_tests.sh
++11
+-0
+
+setup.sh
++37
+-0
+
+test_flowdelta.py
++53
+-0
+
